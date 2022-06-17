@@ -19,3 +19,14 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+
+class Loan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    principal = db.Column(db.Float)
+    balance = db.Column(db.Float)
+    payments = db.relationship('Payment', backref='loan', lazy='dynamic')
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float)
+    loan_id = db.Column(db.Integer, db.ForeignKey('loan.id'))
