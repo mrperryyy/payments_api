@@ -1,4 +1,6 @@
 from datetime import datetime
+from flask import jsonify
+from pydantic import BaseModel, ValidationError, validator
 from api import db
 
 class User(db.Model):
@@ -25,6 +27,16 @@ class Loan(db.Model):
     principal = db.Column(db.Float)
     balance = db.Column(db.Float)
     payments = db.relationship('Payment', backref='loan', lazy='dynamic')
+
+    def to_json(self):
+        return jsonify({
+            'id': self.id,
+            'principal': self.principal,
+            'balance': self.balance,
+        })
+
+class LoanValidator(BaseModel):
+    principal: float
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
