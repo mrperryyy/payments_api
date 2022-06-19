@@ -9,6 +9,7 @@ from api.errors import bad_request
 def index():
     return "Hello, World!"
 
+
 @app.route('/loan/create', methods=['POST'])
 def create_loan():
     '''
@@ -18,7 +19,7 @@ def create_loan():
 
     try:
         LoanValidator(**data)
-        
+
         loan = Loan(principal=data['principal'], balance=data['principal'])
         db.session.add(loan)
         db.session.commit()
@@ -27,12 +28,12 @@ def create_loan():
         response = loan.to_json()
         response.status_code = 201
         response.headers['Location'] = url_for('get_loan', id=loan.id)
-    
-    except ValidationError as e:
-        print(e)
-        response = bad_request(e)
-        
-    return response
+        return response
+
+    except ValidationError as error:
+        print(error)
+        return make_response(error.json(), 400)
+
 
 @app.route('/loan/<int:id>', methods=['GET'])
 def get_loan(id):

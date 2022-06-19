@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import jsonify
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel, ValidationError, validator, confloat
 from api import db
 
 class User(db.Model):
@@ -36,7 +36,7 @@ class Loan(db.Model):
         })
 
 class LoanValidator(BaseModel):
-    principal: float
+    principal: confloat(ge=0)
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
