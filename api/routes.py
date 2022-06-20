@@ -4,7 +4,6 @@ from pydantic import ValidationError
 from api import app, db
 from api.models import Loan, Payment
 from api.validators import LoanValidator, PaymentValidator
-from api.errors import bad_request
 
 @app.route('/index')
 def index():
@@ -19,15 +18,16 @@ def create_loan():
     data = request.get_json(force=True)
 
     try:
+        # validate json data
         loan_data = LoanValidator(**data)
 
+        # create loan
         loan = Loan(principal=loan_data.principal, balance=loan_data.principal)
         db.session.add(loan)
         db.session.commit()
 
         # create 201 reponse
-        response = jsonify(loan.to_dict())
-        response.status_code = 201
+        response = make_response(jsonify(loan.to_dict()), 201)
         response.headers['Location'] = url_for('get_loan', id=loan.id)
         return response
 
@@ -48,18 +48,20 @@ def make_payment():
     json_data = request.get_json(force=True)
 
     try:
+        # validate json data
         payment_data = PaymentValidator(**json_data)
 
+        # create payment and update loan balance
         loan = Loan.query.get(payment_data.loan_id)
         payment = Payment(amount=payment_data.amount, loan=loan)
         loan.balance = loan.balance - payment.amount
         db.session.add(payment)
         db.session.commit()
         
-        response = payment.to_dict()
-        response['loan_balance'] = loan.balance
-        response = jsonify(response)
-        response.status_code = 201
+        # create 201 response, add loan balance to payload
+        payload = payment.to_dict()
+        payload['loan_balance'] = loan.balance
+        response = make_response(jsonify(payload), 201)
         response.headers['Location'] = url_for('get_payment', id=payment.id)
         return response
     
