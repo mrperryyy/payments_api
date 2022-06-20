@@ -19,9 +19,9 @@ def create_loan():
     data = request.get_json(force=True)
 
     try:
-        LoanValidator(**data)
+        loan_data = LoanValidator(**data)
 
-        loan = Loan(principal=data['principal'], balance=data['principal'])
+        loan = Loan(principal=loan_data.principal, balance=loan_data.principal)
         db.session.add(loan)
         db.session.commit()
 

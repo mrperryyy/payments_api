@@ -9,7 +9,7 @@ class LoanValidator(BaseModel):
     def principal_must_be_positive(cls, principal):
         if principal <= 0:
             raise ValueError(f"Loan principal must be greater than 0.")
-        #TODO: return principal??
+        return principal
 
 class PaymentValidator(BaseModel):
     loan_id: int
