@@ -15,11 +15,11 @@ def create_loan():
     '''
     Creates a loan from JSON request.
     '''
-    data = request.get_json(force=True)
+    json_data = request.get_json(force=True)
 
     try:
         # validate json data
-        loan_data = LoanValidator(**data)
+        loan_data = LoanValidator(**json_data)
 
         # create loan
         loan = Loan(principal=loan_data.principal, balance=loan_data.principal)
@@ -75,3 +75,26 @@ def get_payment():
     Retrieve payment
     '''
     return jsonify(Payment.query.get_or_404(id).to_dict())
+
+@app.route('/payment/refund', methods=['POST'])
+def refund_payment():
+    '''
+    Refund previous payment
+    '''
+    json_data = request.get_json(force=True)
+
+    try:
+        payment = Payment.query.get(json_data['payment_id'])
+        loan = Loan.query.get(payment.loan_id)
+        payment.status = 'Refunded'
+        loan.balance = loan.balance + payment.amount
+        db.session.commit()
+
+        payload = payment.to_dict()
+        payload['loan_balance'] = loan.balance
+        response = make_response(payload, 200)
+        return response
+    
+    except ValidationError as error:
+        print(error)
+        return make_response(error.json(), 400)

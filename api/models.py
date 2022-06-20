@@ -1,6 +1,5 @@
 from datetime import datetime
 from flask import jsonify
-from pydantic import BaseModel, ValidationError, validator, confloat
 from api import db
 
 class User(db.Model):
@@ -38,11 +37,13 @@ class Loan(db.Model):
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float)
+    status = db.Column(db.String(8), default='Complete')
     loan_id = db.Column(db.Integer, db.ForeignKey('loan.id'))
 
     def to_dict(self):
         return {
             'id': self.id,
             'amount': self.amount,
+            'status': self.status,
             'loan_id': self.loan_id
         }
