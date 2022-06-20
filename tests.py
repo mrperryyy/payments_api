@@ -1,3 +1,4 @@
+from re import L
 import pytest
 import json
 import requests
@@ -7,6 +8,7 @@ from api import app
 from config import Config
 
 
+# TODO: figure out why fixure is not working. Client has no post/get functions?
 # @pytest.fixture()
 # def client():
 #     with app.test_client() as client:
@@ -72,3 +74,35 @@ def test_create_negative_loan():
         test_data = {'principal': -100}
         resp = client.post('/loan/create', json=test_data)
         assert resp.status_code == 400
+
+def test_get_nonexistent_loan():
+    pass
+
+def test_make_payment():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+        
+        payment_data = {'amount': 10, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+        assert payment_data['amount'] == 10
+        assert payment_data['loan_balance'] == 90
+
+        resp = client.get('/loan/'+str(loan_data['id']))
+        loan_data = json.loads(resp.data)
+        assert loan_data['balance'] == 90
+
+def test_make_negative_payment():
+    pass
+
+def test_make_payment_too_large():
+    pass
+
+def test_make_payment_nonexistent_loan():
+    pass
