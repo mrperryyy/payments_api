@@ -99,10 +99,39 @@ def test_make_payment():
         assert loan_data['balance'] == 90
 
 def test_make_negative_payment():
-    pass
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': -10, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        assert resp.status_code == 400
 
 def test_make_payment_too_large():
-    pass
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 200, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        assert resp.status_code == 400
 
 def test_make_payment_nonexistent_loan():
-    pass
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        payment_data = {'amount': 10, 'loan_id': 100000}
+        resp = client.post('/payment/create', json=payment_data)
+        assert resp.status_code == 400

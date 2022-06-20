@@ -48,7 +48,7 @@ def make_payment():
 
     try:
         payment_data = PaymentValidator(**json_data)
-        print(payment_data.loan_id)
+
         loan = Loan.query.get(payment_data.loan_id)
         payment = Payment(amount=payment_data.amount, loan=loan)
         loan.balance = loan.balance - payment.amount
