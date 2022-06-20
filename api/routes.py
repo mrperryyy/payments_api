@@ -2,7 +2,8 @@ from flask import request, make_response, jsonify, url_for
 from pydantic import ValidationError
 
 from api import app, db
-from api.models import Loan, LoanValidator, Payment, PaymentValidator
+from api.models import Loan, Payment
+from api.validators import LoanValidator, PaymentValidator
 from api.errors import bad_request
 
 @app.route('/index')
