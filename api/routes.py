@@ -70,7 +70,7 @@ def make_payment():
         return make_response(error.json(), 400)
 
 @app.route('/payment/<int:id>', methods=['GET'])
-def get_payment():
+def get_payment(id):
     '''
     Retrieve payment
     '''

@@ -32,7 +32,6 @@ def test_create_loan():
         assert resp['balance'] == 100
         assert status_code == 201
 
-
 def test_create_and_get_loan():
     with app.test_client() as client:
         app.config.from_object(Config)
@@ -53,7 +52,6 @@ def test_create_and_get_loan():
         assert get_data['id'] == loan_id
         assert get_data['principal'] == 200
         assert get_data['balance'] == 200
-
 
 def test_create_loan_invalid_input():
     with app.test_client() as client:
@@ -134,4 +132,64 @@ def test_make_payment_nonexistent_loan():
 
         payment_data = {'amount': 10, 'loan_id': 100000}
         resp = client.post('/payment/create', json=payment_data)
+        assert resp.status_code == 400
+
+def test_refund_payment():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 10, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+        assert payment_data['loan_balance'] == 90
+
+        refund_data = {'payment_id': payment_data['id']}
+        resp = client.post('/payment/refund', json=refund_data)
+        refund_data = json.loads(resp.data)
+        assert refund_data['loan_balance'] == 100
+
+        resp = client.get('/loan/'+str(loan_data['id']))
+        loan_data = json.loads(resp.data)
+        assert loan_data['balance'] == 100
+
+        resp = client.get('/payment/'+str(payment_data['id']))
+        payment_data = json.loads(resp.data)
+        assert payment_data['status'] == 'Refunded'
+
+def test_refund_nonexistent_payment():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        refund_data = {'payment_id': 10000000}
+        resp = client.post('/payment/refund', json=refund_data)
+        assert resp.status_code == 400
+
+def test_refund_refunded_payment():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 10, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+
+        refund_data = {'payment_id': payment_data['id']}
+        resp = client.post('/payment/refund', json=refund_data)
+        refund_data = json.loads(resp.data)
+        
+        refund_data = {'payment_id': payment_data['id']}
+        resp = client.post('/payment/refund', json=refund_data)        
         assert resp.status_code == 400
