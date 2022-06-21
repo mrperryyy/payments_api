@@ -18,7 +18,7 @@ class PaymentValidator(BaseModel):
     @validator('loan_id')
     def loan_must_exist(cls, loan_id):
         if db.session.query(Loan.id).filter_by(id=loan_id).first() is None:
-            raise ValueError(f"Error! loan_id: {loan_id} does not exist.")
+            raise ValueError(f"loan_id: {loan_id} does not exist.")
         return loan_id
     
     @validator('amount')
@@ -36,3 +36,19 @@ class PaymentValidator(BaseModel):
             if loan.balance < amount:
                 raise ValueError(f"Payment cannot be greater than loan balance. Current balance: {loan.balance}.")
             return amount
+
+class RefundValidator(BaseModel):
+    payment_id: int
+
+    @validator('payment_id')
+    def payment_must_exist(cls, payment_id):
+        if db.session.query(Payment.id).filter_by(id=payment_id).first() is None:
+            raise ValueError(f"payment_id: {payment_id} does not exist.")
+        return payment_id
+    
+    @validator('payment_id')
+    def payment_must_be_complete(cls, payment_id):
+        payment = db.session.query(Payment).filter_by(id=payment_id).first()
+        if payment is not None and payment.status == 'Refunded':
+            raise ValueError(f"Payment has already been refunded.")
+        return payment_id

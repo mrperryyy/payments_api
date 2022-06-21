@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from api import app, db
 from api.models import Loan, Payment
-from api.validators import LoanValidator, PaymentValidator
+from api.validators import LoanValidator, PaymentValidator, RefundValidator
 
 @app.route('/index')
 def index():
@@ -84,7 +84,9 @@ def refund_payment():
     json_data = request.get_json(force=True)
 
     try:
-        payment = Payment.query.get(json_data['payment_id'])
+        refund_data = RefundValidator(**json_data)
+
+        payment = Payment.query.get(refund_data.payment_id)
         loan = Loan.query.get(payment.loan_id)
         payment.status = 'Refunded'
         loan.balance = loan.balance + payment.amount
