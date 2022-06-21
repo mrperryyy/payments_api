@@ -193,3 +193,107 @@ def test_refund_refunded_payment():
         refund_data = {'payment_id': payment_data['id']}
         resp = client.post('/payment/refund', json=refund_data)        
         assert resp.status_code == 400
+
+def test_close_loan():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 100, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+
+        close_loan_json = {'loan_id': loan_data['id']}
+        resp = client.put('/loan/close', json=close_loan_json)
+        assert resp.status_code == 200
+
+        close_loan_data = json.loads(resp.data)
+        assert close_loan_data['status'] == 'Closed'
+        assert close_loan_data['balance'] == 0
+
+def test_close_closed_loan():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 100, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+
+        close_loan_json = {'loan_id': loan_data['id']}
+        resp = client.put('/loan/close', json=close_loan_json)
+        assert resp.status_code == 200
+
+        resp = client.put('/loan/close', json=close_loan_json)
+        assert resp.status_code == 400
+
+def test_close_loan_with_balance():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 10, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+
+        close_loan_json = {'loan_id': loan_data['id']}
+        resp = client.put('/loan/close', json=close_loan_json)
+        assert resp.status_code == 400
+
+def test_make_payment_to_closed_loan():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 100, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+
+        close_loan_json = {'loan_id': loan_data['id']}
+        resp = client.put('/loan/close', json=close_loan_json)
+        assert resp.status_code == 200
+
+        resp = client.post('/payment/create', json=payment_data)
+        assert resp.status_code == 400
+
+def test_refund_closed_loan():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 100, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        payment_data = json.loads(resp.data)
+
+        close_loan_json = {'loan_id': loan_data['id']}
+        resp = client.put('/loan/close', json=close_loan_json)
+        assert resp.status_code == 200
+
+        refund_json = {'payment_id': payment_data['id']}
+        resp = client.post('/payment/refund', json=refund_json)
+        assert resp.status_code == 400
