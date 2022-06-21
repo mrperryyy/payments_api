@@ -23,8 +23,11 @@ class Post(db.Model):
 
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    time_created = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    time_last_payment = db.Column(db.DateTime(timezone=True), default=None)
     principal = db.Column(db.Float)
     balance = db.Column(db.Float)
+    status = db.Column(db.String(6), default='Open')
     payments = db.relationship('Payment', backref='loan', lazy='dynamic')
 
     def to_dict(self):
@@ -32,10 +35,12 @@ class Loan(db.Model):
             'id': self.id,
             'principal': self.principal,
             'balance': self.balance,
+            'status': self.status
         }
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    time_created = db.Column(db.DateTime(timezone=True), default=datetime.now())
     amount = db.Column(db.Float)
     status = db.Column(db.String(8), default='Complete')
     loan_id = db.Column(db.Integer, db.ForeignKey('loan.id'))

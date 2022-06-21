@@ -1,7 +1,7 @@
-from re import L
 import pytest
 import json
 import requests
+import time
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from api import app
@@ -131,6 +131,22 @@ def test_make_payment_nonexistent_loan():
         migrate = Migrate(app, db)
 
         payment_data = {'amount': 10, 'loan_id': 100000}
+        resp = client.post('/payment/create', json=payment_data)
+        assert resp.status_code == 400
+
+def test_make_duplicate_payment():
+    with app.test_client() as client:
+        app.config.from_object(Config)
+        db = SQLAlchemy(app)
+        migrate = Migrate(app, db)
+
+        loan_data = {'principal': 100}
+        resp = client.post('/loan/create', json=loan_data)
+        loan_data = json.loads(resp.data)
+
+        payment_data = {'amount': 100, 'loan_id': loan_data['id']}
+        resp = client.post('/payment/create', json=payment_data)
+        assert resp.status_code == 201
         resp = client.post('/payment/create', json=payment_data)
         assert resp.status_code == 400
 
@@ -273,6 +289,7 @@ def test_make_payment_to_closed_loan():
         resp = client.put('/loan/close', json=close_loan_json)
         assert resp.status_code == 200
 
+        time.sleep(15)
         resp = client.post('/payment/create', json=payment_data)
         assert resp.status_code == 400
 

@@ -1,9 +1,10 @@
+from datetime import datetime
 from flask import request, make_response, jsonify, url_for
 from pydantic import ValidationError
 
 from api import app, db
 from api.models import Loan, Payment
-from api.validators import LoanValidator, PaymentValidator, RefundValidator
+from api.validators import LoanValidator, CloseLoanValidator, PaymentValidator, RefundValidator
 
 @app.route('/index')
 def index():
@@ -18,7 +19,7 @@ def create_loan():
     json_data = request.get_json(force=True)
 
     try:
-        # validate json data
+        # validate request
         loan_data = LoanValidator(**json_data)
 
         # create loan
@@ -35,6 +36,28 @@ def create_loan():
         print(error)
         return make_response(error.json(), 400)
 
+@app.route('/loan/close', methods=['PUT'])
+def close_loan():
+    '''
+    Closes loan with 0 balance.
+    '''
+    json_data = request.get_json(force=True)
+
+    try:
+        # validate request
+        loan_data = CloseLoanValidator(**json_data)
+
+        loan = Loan.query.get(loan_data.loan_id)
+        loan.status = 'Closed'
+        db.session.commit()
+
+        payload = loan.to_dict()
+        response = make_response(payload, 200)
+        return response
+
+    except ValidationError as error:
+        print(error)
+        return make_response(error.json(), 400)
 
 @app.route('/loan/<int:id>', methods=['GET'])
 def get_loan(id):
@@ -55,6 +78,7 @@ def make_payment():
         loan = Loan.query.get(payment_data.loan_id)
         payment = Payment(amount=payment_data.amount, loan=loan)
         loan.balance = loan.balance - payment.amount
+        loan.time_last_payment = datetime.now()
         db.session.add(payment)
         db.session.commit()
         
