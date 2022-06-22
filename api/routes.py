@@ -100,7 +100,7 @@ def get_payment(id):
     '''
     return jsonify(Payment.query.get_or_404(id).to_dict())
 
-@app.route('/payment/refund', methods=['POST'])
+@app.route('/payment/refund', methods=['PUT'])
 def refund_payment():
     '''
     Refund previous payment

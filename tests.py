@@ -166,7 +166,7 @@ def test_refund_payment():
         assert payment_data['loan_balance'] == 90
 
         refund_data = {'payment_id': payment_data['id']}
-        resp = client.post('/payment/refund', json=refund_data)
+        resp = client.put('/payment/refund', json=refund_data)
         refund_data = json.loads(resp.data)
         assert refund_data['loan_balance'] == 100
 
@@ -185,7 +185,7 @@ def test_refund_nonexistent_payment():
         migrate = Migrate(app, db)
 
         refund_data = {'payment_id': 10000000}
-        resp = client.post('/payment/refund', json=refund_data)
+        resp = client.put('/payment/refund', json=refund_data)
         assert resp.status_code == 400
 
 def test_refund_refunded_payment():
@@ -203,11 +203,11 @@ def test_refund_refunded_payment():
         payment_data = json.loads(resp.data)
 
         refund_data = {'payment_id': payment_data['id']}
-        resp = client.post('/payment/refund', json=refund_data)
+        resp = client.put('/payment/refund', json=refund_data)
         refund_data = json.loads(resp.data)
         
         refund_data = {'payment_id': payment_data['id']}
-        resp = client.post('/payment/refund', json=refund_data)        
+        resp = client.put('/payment/refund', json=refund_data)        
         assert resp.status_code == 400
 
 def test_close_loan():
@@ -312,5 +312,5 @@ def test_refund_closed_loan():
         assert resp.status_code == 200
 
         refund_json = {'payment_id': payment_data['id']}
-        resp = client.post('/payment/refund', json=refund_json)
+        resp = client.put('/payment/refund', json=refund_json)
         assert resp.status_code == 400
