@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from api import app, db
 from api.models import User, Loan, Payment
-from api.validators import LoanValidator, CloseLoanValidator, PaymentValidator, RefundValidator
+from api.validators import UserValidator, LoanValidator, CloseLoanValidator, PaymentValidator, RefundValidator
 from api.auth import basic_auth
 
 @app.route('/user/create', methods=['POST'])
@@ -14,14 +14,26 @@ def create_user():
     '''
     json_data = request.get_json(force=True)
 
-    user = User(username=json_data['username'])
-    user.set_password(json_data['password'])
-    db.session.add(user)
-    db.session.commit()
+    try:
+        # validate request
+        user_data = UserValidator(**json_data)
 
-    response = make_response(jsonify(user.to_dict()), 201)
-    #TODO: get_user
-    return response
+        user = User(username=user_data.username)
+        user.set_password(user_data.password)
+        db.session.add(user)
+        db.session.commit()
+
+        response = make_response(jsonify(user.to_dict()), 201)
+        response.headers['Location'] = url_for('get_loan', id=user.id)
+        return response
+    
+    except ValidationError as error:
+        print(error)
+        return make_response(error.json(), 400)
+
+@app.route('/user/<int:id>', methods=['GET'])
+def get_user(id):
+    return jsonify(User.query.get_or_404(id).to_dict())
 
 @app.route('/loan/create', methods=['POST'])
 @basic_auth.login_required
