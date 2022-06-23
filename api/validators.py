@@ -3,6 +3,10 @@ from pydantic import BaseModel, ValidationError, validator, confloat
 from api import db
 from api.models import Loan, Payment
 
+class UserValidator(BaseModel):
+    username: str
+    password: str
+
 class LoanValidator(BaseModel):
     principal: float
 

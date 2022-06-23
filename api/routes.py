@@ -1,17 +1,30 @@
 from datetime import datetime
-from flask import request, make_response, jsonify, url_for
+from flask import request, make_response, jsonify, url_for, abort
 from pydantic import ValidationError
 
 from api import app, db
-from api.models import Loan, Payment
+from api.models import User, Loan, Payment
 from api.validators import LoanValidator, CloseLoanValidator, PaymentValidator, RefundValidator
+from api.auth import basic_auth
 
-@app.route('/index')
-def index():
-    return "Hello, World!"
+@app.route('/user/create', methods=['POST'])
+def create_user():
+    '''
+    Creates a user
+    '''
+    json_data = request.get_json(force=True)
 
+    user = User(username=json_data['username'])
+    user.set_password(json_data['password'])
+    db.session.add(user)
+    db.session.commit()
+
+    response = make_response(jsonify(user.to_dict()), 201)
+    #TODO: get_user
+    return response
 
 @app.route('/loan/create', methods=['POST'])
+@basic_auth.login_required
 def create_loan():
     '''
     Creates a loan from JSON request.
@@ -23,7 +36,7 @@ def create_loan():
         loan_data = LoanValidator(**json_data)
 
         # create loan
-        loan = Loan(principal=loan_data.principal, balance=loan_data.principal)
+        loan = Loan(principal=loan_data.principal, balance=loan_data.principal, user=basic_auth.current_user())
         db.session.add(loan)
         db.session.commit()
 
@@ -37,6 +50,7 @@ def create_loan():
         return make_response(error.json(), 400)
 
 @app.route('/loan/close', methods=['PUT'])
+@basic_auth.login_required
 def close_loan():
     '''
     Closes loan with 0 balance.
@@ -48,6 +62,9 @@ def close_loan():
         loan_data = CloseLoanValidator(**json_data)
 
         loan = Loan.query.get(loan_data.loan_id)
+        if loan.user_id != basic_auth.current_user().id:
+            abort(403)
+        
         loan.status = 'Closed'
         db.session.commit()
 
@@ -64,6 +81,7 @@ def get_loan(id):
     return jsonify(Loan.query.get_or_404(id).to_dict())
 
 @app.route('/payment/create', methods=['POST'])
+@basic_auth.login_required
 def make_payment():
     '''
     Create payment from JSON request.
@@ -76,6 +94,9 @@ def make_payment():
 
         # create payment and update loan balance
         loan = Loan.query.get(payment_data.loan_id)
+        if loan.user_id != basic_auth.current_user().id:
+            abort(403)
+        
         payment = Payment(amount=payment_data.amount, loan=loan)
         loan.balance = loan.balance - payment.amount
         loan.time_last_payment = datetime.now()
@@ -101,6 +122,7 @@ def get_payment(id):
     return jsonify(Payment.query.get_or_404(id).to_dict())
 
 @app.route('/payment/refund', methods=['PUT'])
+@basic_auth.login_required
 def refund_payment():
     '''
     Refund previous payment
@@ -112,6 +134,9 @@ def refund_payment():
 
         payment = Payment.query.get(refund_data.payment_id)
         loan = Loan.query.get(payment.loan_id)
+        if loan.user_id != basic_auth.current_user().id:
+            abort(403)
+        
         payment.status = 'Refunded'
         loan.balance = loan.balance + payment.amount
         db.session.commit()

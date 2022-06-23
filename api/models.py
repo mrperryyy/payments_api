@@ -1,4 +1,6 @@
-from datetime import datetime
+import base64
+import os
+from datetime import datetime, timedelta
 from flask import jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from api import db
@@ -14,6 +16,31 @@ class User(db.Model):
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def to_dict(self):
+        return {
+            'username': self.username
+        }
+    
+    # def get_token(self, expires_in=3600):
+    #     now = datetime.utcnow()
+    #     if self.token and self.token_expiration > now + timedelta(seconds=60):
+    #         return self.token
+        
+    #     self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
+    #     self.token_expiration = now + timedelta(seconds=expires_in)
+    #     db.session.add(self)
+    #     return self.token
+    
+    # def revoke_token(self):
+    #     self.token_expiration = datetime.utcnow() - timedelta(seconds=1)
+    
+    # @staticmethod
+    # def check_token(token):
+    #     user = User.query.filter_by(token=token).first()
+    #     if user is None or user.token_expiration < datetime.utcnow():
+    #         return None
+    #     return user
 
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +50,7 @@ class Loan(db.Model):
     balance = db.Column(db.Float)
     status = db.Column(db.String(6), default='Open')
     payments = db.relationship('Payment', backref='loan', lazy='dynamic')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def to_dict(self):
         return {
