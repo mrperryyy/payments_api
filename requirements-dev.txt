@@ -1,0 +1,5 @@
+pytest
+pytest-cov
+pytest-mock
+python-dotenv
+requests-mock
