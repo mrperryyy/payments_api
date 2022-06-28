@@ -1,9 +1,9 @@
-import base64
-import os
-from datetime import datetime, timedelta
-from flask import jsonify
+
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from api import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

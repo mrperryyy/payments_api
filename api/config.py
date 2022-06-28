@@ -1,5 +1,8 @@
 import os
-basedir = os.path.abspath(os.path.dirname(__file__))
+# basedir = os.path.abspath(os.path.dirname(__file__))
+from pathlib import Path
+
+basedir = Path(__file__).resolve().parent
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'

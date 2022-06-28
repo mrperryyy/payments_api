@@ -8,7 +8,7 @@ import time
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from api import app as application
-from config import Config
+from api.config import Config
 # import api.db
 
 @pytest.fixture()
