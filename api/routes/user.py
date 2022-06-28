@@ -1,4 +1,4 @@
-from flask import request, make_response, jsonify, url_for, Blueprint
+from flask import Blueprint, request, make_response, jsonify, url_for
 from pydantic import ValidationError
 
 from api.db.crud import add_user                                                                                                                    
