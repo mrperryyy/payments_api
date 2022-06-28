@@ -30,6 +30,7 @@ def user_create_handler():
         print(error)
         return make_response(error.json(), 400)
 
+
 @user_blueprint.route("/<int:id>", methods=["GET"])
 def user_get_handler(id):
     return jsonify(User.query.get_or_404(id).to_dict())
