@@ -3,8 +3,6 @@ SHELL := /bin/bash
 .PHONY: clean clean-test clean-pyc clean-build
 .DEFAULT_GOAL := show-commands
 
-CURR_DIR := $(shell basename `pwd`)
-
 show-commands:
 	@echo "make install: install package and dependecies"
 	@echo "make test   : run unit tests"
