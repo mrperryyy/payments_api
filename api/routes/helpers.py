@@ -1,9 +1,14 @@
 from datetime import datetime
 from api.db.orm import Loan
+from api.db.crud import find_user
 
 def check_resource_exists(resource) -> None:
     if resource is None:
         raise ValueError(f"Resource not found.")
+
+def check_username_unique(username: str) -> None:
+    if find_user(username) is not None:
+        raise ValueError(f"Username {username} is already in use.")
 
 def check_loan_empty_balance(loan: Loan) -> None:
     if loan.balance > 0:
