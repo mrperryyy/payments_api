@@ -25,7 +25,6 @@ class User(db.Model):
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     time_created = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
-    time_last_payment = db.Column(db.DateTime(timezone=True), default=None)
     principal = db.Column(db.Float)
     balance = db.Column(db.Float)
     status = db.Column(db.String(6), default='Open')
