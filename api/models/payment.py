@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, validator
 from api.db.orm import db, Loan, Payment
 
-class PaymentValidator(BaseModel):
+class PaymentModel(BaseModel):
     loan_id: int
     amount: float
 
@@ -37,7 +37,7 @@ class PaymentValidator(BaseModel):
                 raise ValueError(f"Payment cannot be greater than loan balance. Current balance: {loan.balance}.")
             return amount
 
-class RefundValidator(BaseModel):
+class RefundModel(BaseModel):
     payment_id: int
 
     @validator('payment_id')

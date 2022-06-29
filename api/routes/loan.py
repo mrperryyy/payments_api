@@ -1,7 +1,7 @@
 from flask import Blueprint, request, make_response, jsonify, url_for, abort
 from pydantic import ValidationError
 
-from api.db.crud import create_loan
+from api.db.crud import add_loan, update_loan_status
 from api.db.orm import Loan
 from api.models.loan import LoanModel, CloseLoanModel
 from api.auth import basic_auth
@@ -26,12 +26,11 @@ def create_loan():
 
         # create loan
         loan = Loan(principal=loan_data.principal, balance=loan_data.principal, user=basic_auth.current_user())
-        create_loan(loan)
+        add_loan(loan)
 
         # create 201 reponse
         response = make_response(jsonify(loan.to_dict()), 201)
-        # TODO: is this header not needed? removed in user route
-        response.headers['Location'] = url_for('get_loan', id=loan.id)
+        response.headers['Location'] = url_for('loan.get_loan', id=loan.id)
         return response
 
     except ValidationError as error:
@@ -61,8 +60,7 @@ def close_loan():
         
         if loan.user_id != basic_auth.current_user().id:
             abort(403)
-        loan.status = 'Closed'
-        db.session.commit()
+        update_loan_status(loan, 'Closed')
 
         payload = loan.to_dict()
         response = make_response(payload, 200)
@@ -71,7 +69,6 @@ def close_loan():
     except ValidationError as error:
         print(error)
         return make_response(error.json(), 400)
-        # return make_response(error, 400)
 
 @loan_blueprint.route('/<int:id>', methods=['POST'])
 def get_loan(id):

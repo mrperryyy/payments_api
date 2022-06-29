@@ -20,7 +20,7 @@ def user_create_handler():
 
         user = User(username=user_data.username)
         user.set_password(user_data.password)
-        add_user(User)
+        add_user(user)
 
         response = make_response(jsonify(user.to_dict()), 201)
         # response.headers["Location"] = url_for("get_loan", id=user.id)
@@ -34,8 +34,3 @@ def user_create_handler():
 @user_blueprint.route("/<int:id>", methods=["GET"])
 def user_get_handler(id):
     return jsonify(User.query.get_or_404(id).to_dict())
-
-
-@user_blueprint.route("/test", methods=["GET"])
-def user_test():
-    return {"testing": "the app"}

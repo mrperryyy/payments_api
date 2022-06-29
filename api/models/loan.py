@@ -1,7 +1,7 @@
 from pydantic import BaseModel, validator
 from api.db.orm import db, Loan
 
-class LoanValidator(BaseModel):
+class LoanModel(BaseModel):
     principal: float
 
     @validator('principal')
