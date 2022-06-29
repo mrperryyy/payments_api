@@ -1,4 +1,4 @@
-from flask import Blueprint, request, make_response, jsonify, url_for, abort
+from flask import Blueprint, request, jsonify, url_for
 from pydantic import ValidationError
 
 from api.db.crud import add_loan, find_loan, update_loan_status
@@ -6,7 +6,7 @@ from api.db.orm import Loan
 from api.models.loan import LoanModel, CloseLoanModel
 from api.routes.helpers import check_resource_exists, check_loan_open, check_loan_empty_balance
 from api.auth import basic_auth, check_user_authentication
-from api.errors import bad_request, successful_response
+from api.response import bad_request, successful_response
 
 loan_blueprint = Blueprint('loan', __name__, url_prefix='/loan')
 

@@ -1,7 +1,7 @@
 from optparse import check_builtin
 from tabnanny import check
 from api.routes.helpers import check_loan_open, check_payment_complete, check_resource_exists
-from flask import Blueprint, request, make_response, jsonify, url_for
+from flask import Blueprint, request, jsonify, url_for
 from pydantic import ValidationError
 
 from api.db.crud import add_payment, find_loan, find_payment, update_payment_status
@@ -9,7 +9,7 @@ from api.db.orm import Payment, Loan
 from api.models.payment import PaymentModel, RefundModel
 from api.auth import basic_auth, check_user_authentication
 from api.routes.helpers import check_resource_exists, check_duplicate_payment, check_payment_less_than_balance
-from api.errors import bad_request, successful_response
+from api.response import bad_request, successful_response
 
 payment_blueprint = Blueprint('payment', __name__, url_prefix='/payment')
 

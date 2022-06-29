@@ -1,11 +1,11 @@
-from flask import Blueprint, request, make_response, jsonify, url_for
+from flask import Blueprint, request, jsonify, url_for
 from pydantic import ValidationError
 
 from api.db.crud import add_user                                                                                                                    
 from api.db.orm import User
 from api.models.user import UserModel
 from api.routes.helpers import check_username_unique
-from api.errors import bad_request, successful_response
+from api.response import bad_request, successful_response
 
 user_blueprint = Blueprint("user", __name__, url_prefix="/user")
 
