@@ -22,19 +22,19 @@ def create_loan():
     '''
     json_data = request.get_json(force=True)
 
-    # validate request
     try:
+        # validate request
         loan_data = LoanModel(**json_data)
-    except ValidationError as error:
-        print(error)
-        return make_response(error.json(), 400)
 
-    # create loan
-    loan = Loan(principal=loan_data.principal, balance=loan_data.principal, user=basic_auth.current_user())
-    add_loan(loan)
+        # create loan
+        loan = Loan(principal=loan_data.principal, balance=loan_data.principal, user=basic_auth.current_user())
+        add_loan(loan)
 
-    # return 201 reponse
-    return successful_response(201, loan.to_dict(), location=url_for('loan.get_loan', id=loan.id))
+        # return 201 reponse
+        return successful_response(201, loan.to_dict(), location=url_for('loan.get_loan', id=loan.id))
+    
+    except (ValidationError, ValueError) as error:
+        return bad_request(error)
 
 
 @loan_blueprint.route('/close', methods=['PUT'])
@@ -49,31 +49,27 @@ def close_loan():
     '''
     json_data = request.get_json(force=True)
 
-    # validate request
     try:
+        # validate request
         loan_data = CloseLoanModel(**json_data)
-    except ValidationError as error:
-        print(error)
-        return make_response(error.json(), 400)
 
-    # retrieve loan from database
-    loan = find_loan(loan_data.loan_id)
+        # retrieve loan from database
+        loan = find_loan(loan_data.loan_id)
     
-    # check loan
-    try:
+        # check loan
         check_resource_exists(loan)
         check_user_authentication(basic_auth.current_user(), loan.user_id)
         check_loan_empty_balance(loan)
         check_loan_open(loan)
-    except ValueError as error:
-        print(error)
-        return bad_request(str(error))
 
-    # update database
-    update_loan_status(loan, 'Closed')
+        # update database
+        update_loan_status(loan, 'Closed')
 
-    # return 200 response
-    return successful_response(200, loan.to_dict())
+        # return 200 response
+        return successful_response(200, loan.to_dict())
+    
+    except (ValidationError, ValueError) as error:
+        return bad_request(error)
 
 @loan_blueprint.route('/<int:id>', methods=['GET'])
 def get_loan(id):

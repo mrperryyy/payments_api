@@ -16,27 +16,23 @@ def user_create_handler():
     """
     json_data = request.get_json(force=True)
 
-    # validate request
     try:
+        # validate request
         user_data = UserModel(**json_data)
-    except ValidationError as error:
-        print(error)
-        return make_response(error.json(), 400)
     
-    # check user information
-    try:
+        # check user information
         check_username_unique(user_data.username)
-    except ValueError as error:
-        print(error)
-        return bad_request(str(error))
 
-    # create user, update database
-    user = User(username=user_data.username)
-    user.set_password(user_data.password)
-    add_user(user)
+        # create user, update database
+        user = User(username=user_data.username)
+        user.set_password(user_data.password)
+        add_user(user)
     
-    # return 201 reponse
-    return successful_response(201, user.to_dict(), location=url_for("get_loan", id=user.id))
+        # return 201 reponse
+        return successful_response(201, user.to_dict(), location=url_for("get_loan", id=user.id))
+    
+    except (ValidationError, ValueError) as error:
+        return bad_request(error)
 
 @user_blueprint.route("/<int:id>", methods=["GET"])
 def user_get_handler(id):
