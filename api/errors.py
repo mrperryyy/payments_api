@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, make_response
 from werkzeug.http import HTTP_STATUS_CODES
 
 
@@ -12,4 +12,10 @@ def error_response(status_code, message=None):
     return response
 
 def bad_request(message):
-    return error_response(400, message)
+    return error_response(400, message) 
+
+def successful_response(status_code, payload, location=None):
+    response = make_response(jsonify(payload), status_code)
+    if location:
+        response.headers['Location'] = location
+    return response

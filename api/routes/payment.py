@@ -9,7 +9,7 @@ from api.db.orm import Payment, Loan
 from api.models.payment import PaymentModel, RefundModel
 from api.auth import basic_auth, check_user_authentication
 from api.routes.helpers import check_resource_exists, check_duplicate_payment, check_payment_less_than_balance
-from api.errors import bad_request
+from api.errors import bad_request, successful_response
 
 payment_blueprint = Blueprint('payment', __name__, url_prefix='/payment')
 
@@ -28,9 +28,10 @@ def make_payment():
         print(error)
         return make_response(error.json(), 400)
 
-    # create payment and update loan balance
+    # retrieve loan
     loan = find_loan(payment_data.loan_id)
 
+    # check loan information
     try:
         check_resource_exists(loan)
         check_user_authentication(basic_auth.current_user(), loan.user_id)
@@ -40,15 +41,14 @@ def make_payment():
         print(error)
         return bad_request(str(error))
     
+    # create payment, update database
     payment = Payment(amount=payment_data.amount, loan=loan)
     add_payment(payment, loan)
     
-    # create 201 response, add loan balance to payload
+    # return 201 response
     payload = payment.to_dict()
     payload['loan_balance'] = loan.balance
-    response = make_response(jsonify(payload), 201)
-    response.headers['Location'] = url_for('payment.get_payment', id=payment.id)
-    return response
+    return successful_response(201, payload, location=url_for('payment.get_payment', id=payment.id))
 
 
 @payment_blueprint.route('/<int:id>', methods=['GET'])
@@ -67,14 +67,17 @@ def refund_payment():
     '''
     json_data = request.get_json(force=True)
 
+    # validate json data
     try:
         refund_data = RefundModel(**json_data)
     except ValidationError as error:
         print(error)
         return make_response(error.json(), 400)
 
+    # retrieve payment
     payment = find_payment(refund_data.payment_id)
     
+    # check payment information
     try:
         check_resource_exists(payment)
         loan = find_loan(payment.loan_id)
@@ -85,9 +88,10 @@ def refund_payment():
         print(error)
         return bad_request(str(error))
     
-    update_payment_status(payment, 'Refunded', loan)
+    # update database
+    update_payment_status(payment, 'Refunded', loan=loan)
     
+    # return 200 response
     payload = payment.to_dict()
     payload['loan_balance'] = loan.balance
-    response = make_response(payload, 200)
-    return response
+    return successful_response(200, payload)

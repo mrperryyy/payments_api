@@ -6,7 +6,7 @@ from api.db.orm import Loan
 from api.models.loan import LoanModel, CloseLoanModel
 from api.routes.helpers import check_resource_exists, check_loan_open, check_loan_empty_balance
 from api.auth import basic_auth, check_user_authentication
-from api.errors import bad_request
+from api.errors import bad_request, successful_response
 
 loan_blueprint = Blueprint('loan', __name__, url_prefix='/loan')
 
@@ -22,8 +22,8 @@ def create_loan():
     '''
     json_data = request.get_json(force=True)
 
+    # validate request
     try:
-        # validate request
         loan_data = LoanModel(**json_data)
     except ValidationError as error:
         print(error)
@@ -33,10 +33,8 @@ def create_loan():
     loan = Loan(principal=loan_data.principal, balance=loan_data.principal, user=basic_auth.current_user())
     add_loan(loan)
 
-    # create 201 reponse
-    response = make_response(jsonify(loan.to_dict()), 201)
-    response.headers['Location'] = url_for('loan.get_loan', id=loan.id)
-    return response
+    # return 201 reponse
+    return successful_response(201, loan.to_dict(), location=url_for('loan.get_loan', id=loan.id))
 
 
 @loan_blueprint.route('/close', methods=['PUT'])
@@ -71,10 +69,11 @@ def close_loan():
         print(error)
         return bad_request(str(error))
 
+    # update database
     update_loan_status(loan, 'Closed')
 
-    payload = loan.to_dict()
-    return make_response(payload, 200)
+    # return 200 response
+    return successful_response(200, loan.to_dict())
 
 @loan_blueprint.route('/<int:id>', methods=['GET'])
 def get_loan(id):
