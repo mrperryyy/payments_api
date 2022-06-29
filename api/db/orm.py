@@ -24,7 +24,7 @@ class User(db.Model):
 
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    time_created = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    time_created = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
     time_last_payment = db.Column(db.DateTime(timezone=True), default=None)
     principal = db.Column(db.Float)
     balance = db.Column(db.Float)
@@ -42,7 +42,7 @@ class Loan(db.Model):
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    time_created = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    time_created = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
     amount = db.Column(db.Float)
     status = db.Column(db.String(8), default='Complete')
     loan_id = db.Column(db.Integer, db.ForeignKey('loan.id'))

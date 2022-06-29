@@ -1,7 +1,7 @@
 from optparse import check_builtin
 from tabnanny import check
 from api.routes.helpers import check_loan_open, check_payment_complete, check_resource_exists
-from flask import Blueprint, request, make_response, jsonify, url_for, abort
+from flask import Blueprint, request, make_response, jsonify, url_for
 from pydantic import ValidationError
 
 from api.db.crud import add_payment, find_loan, find_payment, update_payment_status
@@ -21,8 +21,8 @@ def make_payment():
     '''
     json_data = request.get_json(force=True)
 
+    # validate json data
     try:
-        # validate json data
         payment_data = PaymentModel(**json_data)
     except ValidationError as error:
         print(error)
@@ -34,7 +34,7 @@ def make_payment():
     try:
         check_resource_exists(loan)
         check_user_authentication(basic_auth.current_user(), loan.user_id)
-        check_duplicate_payment(loan)
+        check_duplicate_payment(loan, payment_data.amount)
         check_payment_less_than_balance(loan, payment_data.amount)
     except ValueError as error:
         print(error)

@@ -1,6 +1,6 @@
 from datetime import datetime
 from api.db.orm import Loan
-from api.db.crud import find_user
+from api.db.crud import find_user, find_recent_loan_payment
 
 def check_resource_exists(resource) -> None:
     if resource is None:
@@ -18,12 +18,10 @@ def check_loan_open(loan: Loan) -> None:
     if loan.status != 'Open':
         raise ValueError(f"Loan {loan.id} is closed. No more payments or refunds can be processed.")
 
-# TODO: idempotency
-def check_duplicate_payment(loan: Loan) -> None:
-    if loan and loan.time_last_payment is not None:
-        current_time = datetime.now()
-        if (current_time - loan.time_last_payment).seconds < 10:
-            raise ValueError(f"A payment was made to loan {loan.id} in the past 10 seconds. Please wait before making another payment.")
+def check_duplicate_payment(loan: Loan, amount: float) -> None:
+    payment = find_recent_loan_payment(loan, amount)
+    if payment is not None and (datetime.utcnow() - payment.time_created).seconds < 10:
+        raise ValueError(f"An identical payment was made to loan {loan.id} in the past 10 seconds. Please wait before making another payment.")
 
 def check_payment_less_than_balance(loan: Loan, payment_amount: float):
     if loan.balance < payment_amount:

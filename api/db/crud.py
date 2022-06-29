@@ -33,3 +33,7 @@ def update_payment_status(payment: Payment, status: str, loan=None) -> None:
     if loan:
         loan.balance = loan.balance + payment.amount
     db.session.commit()
+
+def find_recent_loan_payment(loan: Loan, amount: float) -> Optional[Payment]:
+    return db.session.query(Payment).filter_by(loan_id=loan.id, amount=amount).order_by(Payment.time_created.desc()).first()
+    
