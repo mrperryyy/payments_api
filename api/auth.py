@@ -1,3 +1,4 @@
+from flask import abort
 from flask_httpauth import HTTPBasicAuth
 from api.db.orm import User
 from api.errors import error_response
@@ -14,3 +15,7 @@ def verify_password(username, password):
 @basic_auth.error_handler
 def basic_auth_error(status):
     return error_response(status)
+
+def check_user_authentication(current_user: User, id: int) -> None:
+    if id != current_user.id:
+        abort(403)

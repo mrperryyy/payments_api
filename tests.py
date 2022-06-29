@@ -33,7 +33,7 @@ def get_credential_header():
 
 def test_create_loan(client):
     test_data = {'principal': 100}
-    resp = client.post('/loan/create', json=test_data, headers=get_credential_header())
+    resp = client.post('/loan', json=test_data, headers=get_credential_header())
     status_code = resp.status_code
     resp = json.loads(resp.data)
     assert status_code == 201
@@ -42,7 +42,7 @@ def test_create_loan(client):
 
 def test_create_and_get_loan(client):
     test_data = {'principal': 200}
-    resp_create = client.post('/loan/create', json=test_data, headers=get_credential_header())
+    resp_create = client.post('/loan', json=test_data, headers=get_credential_header())
     assert resp_create.status_code == 201
 
     resp_data = json.loads(resp_create.data)
@@ -58,12 +58,12 @@ def test_create_and_get_loan(client):
 
 def test_create_loan_invalid_input(client):
     test_data = {'principal': 'Hello World'}
-    resp = client.post('/loan/create', json=test_data, headers=get_credential_header())
+    resp = client.post('/loan', json=test_data, headers=get_credential_header())
     assert resp.status_code == 400
 
 def test_create_negative_loan(client):
     test_data = {'principal': -100}
-    resp = client.post('/loan/create', json=test_data, headers=get_credential_header())
+    resp = client.post('/loan', json=test_data, headers=get_credential_header())
     assert resp.status_code == 400
 
 def test_get_nonexistent_loan():
@@ -71,11 +71,11 @@ def test_get_nonexistent_loan():
 
 def test_make_payment(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
         
     payment_data = {'amount': 10, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
     assert payment_data['amount'] == 10
     assert payment_data['loan_balance'] == 90
@@ -86,45 +86,45 @@ def test_make_payment(client):
 
 def test_make_negative_payment(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': -10, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     assert resp.status_code == 400
 
 def test_make_payment_too_large(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 200, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     assert resp.status_code == 400
 
 def test_make_payment_nonexistent_loan(client):
     payment_data = {'amount': 10, 'loan_id': 100000}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     assert resp.status_code == 400
 
 def test_make_duplicate_payment(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 100, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     assert resp.status_code == 201
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     assert resp.status_code == 400
 
 def test_refund_payment(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 10, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
     assert payment_data['loan_balance'] == 90
 
@@ -148,11 +148,11 @@ def test_refund_nonexistent_payment(client):
 
 def test_refund_refunded_payment(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 10, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
 
     refund_data = {'payment_id': payment_data['id']}
@@ -165,11 +165,11 @@ def test_refund_refunded_payment(client):
 
 def test_close_loan(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 100, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
 
     close_loan_json = {'loan_id': loan_data['id']}
@@ -182,11 +182,11 @@ def test_close_loan(client):
 
 def test_close_closed_loan(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 100, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
 
     close_loan_json = {'loan_id': loan_data['id']}
@@ -198,11 +198,11 @@ def test_close_closed_loan(client):
 
 def test_close_loan_with_balance(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 10, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
 
     close_loan_json = {'loan_id': loan_data['id']}
@@ -211,11 +211,11 @@ def test_close_loan_with_balance(client):
 
 def test_make_payment_to_closed_loan(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 100, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
 
     close_loan_json = {'loan_id': loan_data['id']}
@@ -223,16 +223,16 @@ def test_make_payment_to_closed_loan(client):
     assert resp.status_code == 200
 
     time.sleep(11)
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     assert resp.status_code == 400
 
 def test_refund_closed_loan(client):
     loan_data = {'principal': 100}
-    resp = client.post('/loan/create', json=loan_data, headers=get_credential_header())
+    resp = client.post('/loan', json=loan_data, headers=get_credential_header())
     loan_data = json.loads(resp.data)
 
     payment_data = {'amount': 100, 'loan_id': loan_data['id']}
-    resp = client.post('/payment/create', json=payment_data, headers=get_credential_header())
+    resp = client.post('/payment', json=payment_data, headers=get_credential_header())
     payment_data = json.loads(resp.data)
 
     close_loan_json = {'loan_id': loan_data['id']}
