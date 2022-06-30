@@ -1,5 +1,3 @@
-from optparse import check_builtin
-from tabnanny import check
 from api.routes.helpers import check_loan_open, check_payment_complete, check_resource_exists
 from flask import Blueprint, request, jsonify, url_for
 from pydantic import ValidationError
@@ -76,7 +74,7 @@ def refund_payment():
         check_user_authentication(basic_auth.current_user(), loan.user_id)
         check_payment_complete(payment)
         check_loan_open(loan)
-    
+
         # update database
         update_payment_status(payment, 'Refunded', loan=loan)
 
