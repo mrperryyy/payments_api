@@ -29,7 +29,7 @@ def user_create_handler():
         add_user(user)
     
         # return 201 reponse
-        return successful_response(201, user.to_dict(), location=url_for("get_loan", id=user.id))
+        return successful_response(201, user.to_dict(), location=url_for("user.user_get_handler", id=user.id))
     
     except (ValidationError, ValueError) as error:
         return bad_request(error)
