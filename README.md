@@ -130,16 +130,26 @@ refund_payment:
 # Example requests (using HTTPie)
 
 create user:
-    $ http POST http://127.0.0.1:5000/user username=user1 password=password123
+```bash
+$ http POST http://127.0.0.1:5000/user username=user1 password=password123
+```
 
 create loan:
-    $ http --auth user1:password123 POST http://127.0.0.1:5000/loan principal=100
+```bash
+$ http --auth user1:password123 POST http://127.0.0.1:5000/loan principal=100
+```
 
 create payment:
-    $ http --auth user1:password123 POST http://127.0.0.1:5000/payment loan_id=1 amount=10
+```bash
+$ http --auth user1:password123 POST http://127.0.0.1:5000/payment loan_id=1 amount=10
+```
 
 refund payment:
-    $ http --auth user1:password123 PUT http://127.0.0.1:5000/payment/refund payment_id=1
+```bash
+$ http --auth user1:password123 PUT http://127.0.0.1:5000/payment/refund payment_id=1
+```
 
 close loan:
-    $ http --auth user1:password123 PUT http://127.0.0.1:5000/loan/close loan_id=1
+```bash
+$ http --auth user1:password123 PUT http://127.0.0.1:5000/loan/close loan_id=1
+```
