@@ -12,7 +12,12 @@ user_blueprint = Blueprint("user", __name__, url_prefix="/user")
 @user_blueprint.route("/", methods=["POST"])
 def user_create_handler():
     """
-    Creates a user
+    Creates a user.
+    JSON format:
+    {
+        'username' : <str: username >
+        'password' : <str: password >
+    }
     """
     json_data = request.get_json(force=True)
 

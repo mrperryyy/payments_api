@@ -15,7 +15,12 @@ payment_blueprint = Blueprint('payment', __name__, url_prefix='/payment')
 @basic_auth.login_required
 def payment_create_handler():
     '''
-    Create payment from JSON request.
+    Creates a payment.
+    JSON format:
+    {
+        'loan_id' : <int: loan id >
+        'amount'  : <float: amount >
+    }
     '''
     json_data = request.get_json(force=True)
 
@@ -57,7 +62,11 @@ def payment_get_handler(id):
 @basic_auth.login_required
 def payment_refund_handler():
     '''
-    Refund previous payment
+    Refunds payment
+    JSON format:
+    {
+        'payment_id' : <int: payment id >
+    }
     '''
     json_data = request.get_json(force=True)
     
