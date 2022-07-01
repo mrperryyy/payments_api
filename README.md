@@ -61,6 +61,7 @@ send requests to the server.
 Valid user credentials are required to access loan and payment functionalities.
 
 create_user:
+
     PATH: {server}/user/
     METHOD: POST
 
@@ -76,6 +77,7 @@ loan and payment functionalities.
 # Loan
 
 create_loan:
+
     PATH: {server}/loan/
     METHOD: POST
 
@@ -88,6 +90,7 @@ create_loan:
     }
 
 close_loan:
+
     PATH: {server}/loan/close
     METHOD: PUT
 
@@ -102,6 +105,7 @@ close_loan:
 # Payment
 
 create_payment:
+
     PATH: {server}/payment/
     METHOD: POST
 
@@ -115,6 +119,7 @@ create_payment:
     }
 
 refund_payment:
+
     PATH: {server}/payment/refund
     METHOD: PUT
 
