@@ -12,7 +12,7 @@ loan_blueprint = Blueprint('loan', __name__, url_prefix='/loan')
 
 @loan_blueprint.route('/', methods=['POST'])
 @basic_auth.login_required
-def create_loan():
+def loan_create_handler():
     '''
     Creates a loan.
     JSON format:
@@ -31,7 +31,7 @@ def create_loan():
         add_loan(loan)
 
         # return 201 reponse
-        return successful_response(201, loan.to_dict(), location=url_for('loan.get_loan', id=loan.id))
+        return successful_response(201, loan.to_dict(), location=url_for('loan.loan_get_handler', id=loan.id))
     
     except (ValidationError, ValueError) as error:
         return bad_request(error)
@@ -39,7 +39,7 @@ def create_loan():
 
 @loan_blueprint.route('/close', methods=['PUT'])
 @basic_auth.login_required
-def close_loan():
+def loan_close_handler():
     '''
     Closes loan. Balance must be 0.
     JSON format:
@@ -72,5 +72,5 @@ def close_loan():
         return bad_request(error)
 
 @loan_blueprint.route('/<int:id>', methods=['GET'])
-def get_loan(id):
+def loan_get_handler(id):
     return jsonify(Loan.query.get_or_404(id).to_dict())

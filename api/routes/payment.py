@@ -13,7 +13,7 @@ payment_blueprint = Blueprint('payment', __name__, url_prefix='/payment')
 
 @payment_blueprint.route('/', methods=['POST'])
 @basic_auth.login_required
-def make_payment():
+def payment_create_handler():
     '''
     Create payment from JSON request.
     '''
@@ -39,14 +39,14 @@ def make_payment():
         # return 201 response
         payload = payment.to_dict()
         payload['loan_balance'] = loan.balance
-        return successful_response(201, payload, location=url_for('payment.get_payment', id=payment.id))
+        return successful_response(201, payload, location=url_for('payment.payment_get_handler', id=payment.id))
     
     except (ValidationError, ValueError) as error:
         return bad_request(error)
 
 
 @payment_blueprint.route('/<int:id>', methods=['GET'])
-def get_payment(id):
+def payment_get_handler(id):
     '''
     Retrieve payment
     '''
@@ -55,7 +55,7 @@ def get_payment(id):
 
 @payment_blueprint.route('/refund', methods=['PUT'])
 @basic_auth.login_required
-def refund_payment():
+def payment_refund_handler():
     '''
     Refund previous payment
     '''
